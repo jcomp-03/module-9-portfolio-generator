@@ -1,5 +1,3 @@
-
-
 // If the user elected to give information "about" themselves, generate HTML for it and display it.
 // It takes the variable 'about' initalized further down and defined from destructuring 
 // the array templateData and passes it as an argument into the function generateAbout. If it is not

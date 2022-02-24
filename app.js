@@ -1,6 +1,6 @@
 const inquirer = require('inquirer');
-const fs = require('fs');
-
+// const generateSite = require('./utils/generate-site.js');
+const {writeFile, copyFile} = require('./utils/generate-site.js');
 // this const basically imports
 const generatePage = require('./src/page-template.js');
 
@@ -27,7 +27,7 @@ const promptUser = () => {
         if (nameInput) {
           return true;
         } else {
-          console.log('Please enter your name!');
+          console.log('Please enter your GitHub username!');
           return false;
         }
       }
@@ -54,7 +54,8 @@ const promptUser = () => {
 };
 
 const promptProject = portfolioData => {
-  // If there's no 'projects' array property, create one
+  // If there's no array 'projects' belonging to the
+  // object portfolioData, create one
   if (!portfolioData.projects) {
     portfolioData.projects = [];
   }
@@ -64,6 +65,7 @@ const promptProject = portfolioData => {
   Add a New Project
   ==================
   `);
+
   return inquirer.prompt([
     {
       type: 'input',
@@ -123,6 +125,11 @@ const promptProject = portfolioData => {
       default: false
     }
   ])
+  // with all of the project data that's been collected in the above prompts,
+  // push that project data into the array 'projects' belonging to portfolioData
+  // If the user elects to add another project, run promptProject() again. If the
+  // user is finished adding projects, return portfolioData with all the projects
+  // stored in array 'projects'
   .then(projectData => {
     portfolioData.projects.push(projectData);
     if (projectData.confirmAddProject) {
@@ -131,20 +138,49 @@ const promptProject = portfolioData => {
       return portfolioData;
     }
   });
-
 };
 
-promptUser()
-.then(promptProject)
-.then(portfolioData => {
-  const pageHTML = generatePage(portfolioData);
 
-  fs.writeFile('./index.html', pageHTML, err => {
-    if (err) throw err;
-    console.log('Page created! Check out index.html in this directory to see it!');
-  });
-
+promptUser() // prompt user for their information; return it as an object in a Promise
+.then(promptProject) // promptProject captures the returning data from promptUser()
+.then(portfolioData => { // after capturing the projects added by the user, the portfolioData
+  // boject is passed into the function generatePage, which will return the finished HTML
+  // template code into pageHTML
+  return generatePage(portfolioData);
+})
+.then(pageHTML => {
+  return writeFile(pageHTML);
+})
+.then(writeFileResponse => {
+  console.log(writeFileResponse);
+  return copyFile();
+})
+.then(copyFileResponse => {
+  console.log(copyFileResponse);
+})
+.catch(err => {
+  console.log(err);
 });
+
+  /* fs.writeFile('./dist/index.html', pageHTML, err => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+
+    console.log('Page created! Check out index.html in this directory to see it!');
+  
+    // copy the stylesheet once we know the html page was
+    // succesffully made. If there's an error, log it to console.
+    fs.copyFile('./src/style.css', './dist/style.css', err => {
+      if (err) {
+        console.log(err);
+        return;
+      } 
+      console.log('Style sheet copied successfully!');
+    }); // end .copyFile
+  }); // end .writeFile
+}); //end .then */
 
 
 /* const mockData = {
